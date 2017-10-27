@@ -19,9 +19,7 @@ def check_keydown_events(event, settings, screen, ship, bullets):
     elif event.key == pygame.K_LEFT:
         ship.moving_left = True
     elif event.key == pygame.K_SPACE:
-        #create a new bullet and add it to the group bullets
-        new_bullet = Bullet(settings, screen, ship)
-        bullets.add(new_bullet)
+        fire_bullets(settings, screen, ship, bullets)
 
 def check_keyup_events(event, ship):
     if event.key == pygame.K_RIGHT:
@@ -40,3 +38,19 @@ def update_screen(screen, settings, ship, bullets):
 
     #make the most recently drawn screen visible
     pygame.display.flip()
+
+def update_bullets(bullets):
+    """Update the position of the bullet and delete bullets that have gone off screen"""
+    bullets.update()
+
+    #Get rid of bullets that have dissapeared
+    for bullet in bullets.copy():
+        if bullet.rect.bottom <= 0:
+            bullets.remove(bullet)
+        print(len(bullets))
+
+def fire_bullets(settings, screen, ship, bullets):
+    #create a new bullet and add it to the group bullets
+    if len(bullets) < settings.bullet_limit:
+        new_bullet = Bullet(settings, screen, ship)
+        bullets.add(new_bullet)
