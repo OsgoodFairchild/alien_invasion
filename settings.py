@@ -10,12 +10,16 @@ class Settings():
         self.screen_color = (230, 230, 230)
 
         #ship settings
-        self.ship_speed = 5
+        self.ship_speed = 10
 
         #bullet settings
-        self.bullet_speed = 3
+        self.bullet_speed = 10
         self.bullet_width = 3
         self.bullet_height = 15
         self.bullet_color = 60, 60, 60
         self.bullet_limit = 5
-        
+
+        #alien settings
+        self.alien_speed = 1
+        self.drop_speed = 10
+        self.fleet_direction = 1
