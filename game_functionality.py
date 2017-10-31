@@ -6,7 +6,7 @@ from time   import sleep
 
 def ship_hit(settings, stats, screen, ship, aliens, bullets):
 
-    if stats.ships_left >= 0:
+    if stats.ships_left > 0:
         stats.ships_left -= 1
 
         #empty the lists of aliens and bullets
@@ -41,6 +41,7 @@ def check_play_button(settings, screen, stats, play_button, ship, aliens, bullet
     if play_button.rect.collidepoint(mouse_x, mouse_y):
         button_clicked = play_button.rect.collidepoint(mouse_x, mouse_y)
         if button_clicked and not stats.game_active:
+            settings.inititialize_dynamic_settings()
             pygame.mouse.set_visible(False)
             stats.reset_stats()
             stats.game_active = True
@@ -70,7 +71,7 @@ def check_keyup_events(event, ship):
     elif event.key == pygame.K_LEFT:
         ship.moving_left = False
 
-def update_screen(stats, screen, settings, ship, bullets, aliens, play_button):
+def update_screen(sb, stats, screen, settings, ship, bullets, aliens, play_button):
     screen.fill(settings.screen_color)
 
     #redraw all the bullets behind the ship
@@ -80,12 +81,14 @@ def update_screen(stats, screen, settings, ship, bullets, aliens, play_button):
     ship.blitme()
     aliens.draw(screen)
 
+    sb.show_score()
+
     if not stats.game_active:
         play_button.draw_button()
     #make the most recently drawn screen visible
     pygame.display.flip()
 
-def update_bullets(settings, screen, ship, aliens, bullets):
+def update_bullets(settings, screen, stats, sb, ship, aliens, bullets):
     """Update the position of the bullet and delete bullets that have gone off screen"""
     bullets.update()
 
@@ -94,13 +97,19 @@ def update_bullets(settings, screen, ship, aliens, bullets):
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
         #print(len(bullets))
-    check_bullet_alien_collisions(settings, screen, ship, aliens, bullets)
+    check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bullets)
 
-def check_bullet_alien_collisions(settings, screen, ship, aliens, bullets):
+def check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bullets):
     collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
+
+    if collisions:
+        for aliens in collisions.values():
+            stats.score += settings.alien_points * len(aliens)
+            sb.prep_score()
 
     if len(aliens) == 0:
         bullets.empty()
+        settings.increase_speed()
         create_fleet(settings, screen, ship, aliens)
 
 def fire_bullets(settings, screen, ship, bullets):
@@ -165,3 +174,9 @@ def check_aliens_bottom(settings, stats, screen, ship, aliens, bullets):
         if alien.rect.bottom >= screen_rect.bottom:
             ship_hit(settings, stats, screen, ship, aliens, bullets)
             break
+
+def check_high_score(stats, sb):
+    """Check to see if there is a new high score"""
+    if stats.score > stats.high_score:
+        stats.high_score = stats.score
+        sb.prep_high_score()
